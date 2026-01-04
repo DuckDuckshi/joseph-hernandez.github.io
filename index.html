@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Joseph Hernandez | Electrical Engineer</title>
+  <meta name="description" content="Portfolio of Joseph Hernandez — Electrical Engineering projects in embedded systems and power systems." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- Top bar -->
+  <div id="top"></div>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand" href="#top">
+        <span class="brand__dot" aria-hidden="true"></span>
+        <span class="brand__text">Joseph Hernandez</span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="nav" id="nav">
+        <a href="#career-goal">Career Goal</a>
+        <a href="#projects">Projects</a>
+        <a href="#experience">Experience</a>
+        <a href="#skills">Skills</a>
+        <a href="#education">Education</a>
+        <a href="#contact">Contact</a>
+        <a class="btn btn--ghost" href="#resume">Resume</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main>
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="kicker">Electrical Engineer • Embedded Systems • Power Systems</p>
+          <h1>
+            I build practical hardware + firmware systems —
+            from STM32 automation to power monitoring.
+          </h1>
+          <p class="lead">
+            Recent B.S. Electrical Engineering graduate (SFSU). I like hands-on validation,
+            debugging, and building real systems that measure, control, and ship.
+          </p>
+
+          <div class="hero__cta">
+            <a class="btn" href="#projects">View Projects</a>
+            <a class="btn btn--ghost" href="#contact">Contact</a>
+          </div>
+
+          <ul class="hero__meta">
+            <li><strong>Location:</strong> San Francisco Bay Area, CA</li>
+            <li><strong>Email:</strong> <a href="mailto:joey6th14@gmail.com">joey6th14@gmail.com</a></li>
+            <li><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/joseph-hernandez-7150101a2"target="_blank" rel="noreferrer">/in/joseph-hernandez</a></li>
+          </ul>
+        </div>
+
+        <aside class="hero__card" aria-label="Quick summary">
+          <h2>Quick Summary</h2>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat__num">3+</div>
+              <div class="stat__label">Core Projects</div>
+            </div>
+            <div class="stat">
+              <div class="stat__num">STM32</div>
+              <div class="stat__label">Embedded focus</div>
+            </div>
+            <div class="stat">
+              <div class="stat__num">Power</div>
+              <div class="stat__label">Substation + monitoring</div>
+            </div>
+            <div class="stat">
+              <div class="stat__num">Validation</div>
+              <div class="stat__label">Testing mindset</div>
+            </div>
+          </div>
+
+          <div class="chips">
+            <span class="chip">C / C++</span>
+            <span class="chip">HTML/CSS/JS</span>
+            <span class="chip">MATLAB/Simulink</span>
+            <span class="chip">KiCad</span>
+            <span class="chip">LTspice</span>
+            <span class="chip">Oscilloscope</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+<section class="section" id="career-goal">
+  <div class="container">
+    <div class="section__head">
+      <h2>Career Goal</h2>
+      <p>Professional direction and engineering interests.</p>
+    </div>
+
+    <div class="panel">
+      <p>
+        I am seeking an entry-level electrical engineering role focused on embedded systems, hardware validation,
+        and power-related applications. My goal is to contribute to safe, reliable, and well-tested engineering
+        solutions by applying hands-on experience in microcontroller-based system integration and high-power
+        electrical environments.
+      </p>
+      <p>
+        I believe in continuous learning and improvement, and that strong engineers grow by learning from their
+        mistakes and supporting one another. Over time, I aim to become a dependable engineer who not only
+        delivers high-quality technical work, but also mentors and guides new engineers entering the field.
+      </p>
+    </div>
+  </div>
+</section>
+
+    <!-- Projects -->
+    <section class="section" id="projects">
+      <div class="container">
+        <div class="section__head">
+          <h2>Projects</h2>
+          <p>Selected builds from embedded systems, analog design, and power monitoring.</p>
+        </div>
+
+        <div class="grid cards">
+          <!-- Project 1 -->
+          <article class="card">
+            <div class="card__top">
+              <h3>Self-Sustaining Greenhouse System</h3>
+              <p class="card__tag">STM32L476RG • Sensors • Timers • Control</p>
+            </div>
+            <p>
+              Automated irrigation + temperature control system using ARM STM32L476RG.
+              Implemented LED indicators, ADC sensor readings, and timer logic in Keil (assembly + C).
+            </p>
+            <ul class="bullets">
+              <li>ADC-based sensing to classify environmental conditions</li>
+              <li>Timer-driven automation behavior (periodic control loop)</li>
+              <li>Firmware structure designed for debugging + iteration</li>
+            </ul>
+            <div class="card__actions">
+              <a class="btn btn--small btn--ghost" href="greenhouse code.txt" target="_blank" rel="noreferrer">Code</a>
+              <a class="btn btn--small btn--ghost" href="Final Project Report for greenhouse system.docx" target="_blank" rel="noreferrer">Project Report</a>
+            
+             </a>
+            </div>
+            
+          </article>
+
+          <!-- Project 2 -->
+          <article class="card">
+            <div class="card__top">
+              <h3>Custom Audio Device — Headphone Amplifier</h3>
+              <p class="card__tag">Analog • PCB • Eagle • OP27</p>
+            </div>
+            <p>
+              Designed and built a headphone amplifier: schematic + PCB in Eagle, assembled and tested
+              for low-noise, high-quality output.
+            </p>
+            <ul class="bullets">
+              <li>OP27 op-amp front end with BJT/MOSFET stage</li>
+              <li>Bench-tested for noise + signal integrity</li>
+              <li>Hands-on assembly and debug</li>
+            </ul>
+            <div class="card__actions">
+          
+            </div>
+          </article>
+
+          <!-- Project 3 -->
+          <article class="card">
+            <div class="card__top">
+              <h3>Metered Power Outlet</h3>
+              <p class="card__tag">Power Monitoring • Remote Control • Validation</p>
+            </div>
+            <p>
+              Designed a system that powers and measures socket-level data with remote termination
+              through a web/app interface, and ran validation using LTspice + KiCad.
+            </p>
+            <ul class="bullets">
+              <li>Hardware validation approach using simulation</li>
+              <li>Test/validation scripting and documentation mindset</li>
+              <li>Focus on measuring + reporting electrical data</li>
+            </ul>
+            <div class="card__actions">
+              <a class="btn btn--small"
+              href="https://sites.google.com/view/sfsucapstone/home?authuser=0"
+               target="_blank" rel="noreferrer">
+            Capstone Page
+            </a>
+
+              <a class="btn btn--small btn--ghost"
+               href="https://github.com/felixcoffelt/Metered_Extention_Cord"
+                target="_blank" rel="noreferrer">
+                GitHub
+               </a>
+              
+            </div>
+
+          </article>
+        </div>
+
+        
+        
+        </div>
+      </div>
+    </section>
+<section class="section" id="poster">
+  <div class="container">
+    <div class="section__head">
+      <h2>Capstone Poster</h2>
+      <p>Metered Power Outlet — project poster (view or download).</p>
+    </div>
+
+    <div class="panel">
+      <div class="poster-actions">
+        <a class="btn btn--small" href="Poster_proposal3.pdf" target="_blank" rel="noreferrer">Open PDF</a>
+        <a class="btn btn--small btn--ghost" href="Poster_proposal3.pdf" download>Download PDF</a>
+      </div>
+
+      <a href="Poster_proposal3.pdf" target="_blank" rel="noreferrer" class="poster-link">
+        <img src="poster.png" alt="Metered Power Outlet Capstone Poster" class="poster-img" />
+      </a>
+
+      <p class="muted" style="margin-top:10px;">
+        Tip: click the poster to open the PDF in a new tab.
+      </p>
+    </div>
+  </div>
+</section>
+
+    <!-- Experience -->
+    <section class="section section--alt" id="experience">
+      <div class="container">
+        <div class="section__head">
+          <h2>Experience</h2>
+          <p>Engineering work across power infrastructure + hardware/software integration.</p>
+        </div>
+
+        <div class="timeline">
+          <div class="timeline__item">
+            <div class="timeline__when">Jun 2024 – Aug 2024</div>
+            <div class="timeline__what">
+              <h3>Project Engineer Intern — Anvil Power Inc (Emeryville, CA)</h3>
+              <ul class="bullets">
+                <li>Reviewed/revised electrical design plans for substations and transformers with IEEE/NFPA alignment</li>
+                <li>Daily site inspections and system testing; coordinated safety and compliance workflows</li>
+                <li>Managed RFIs/submittals and supported procurement optimization with engineering teams</li>
+                <li>Partnered with engineers/PMs to improve UPS and switchgear performance through technical review</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="timeline__item">
+            <div class="timeline__when">May 2022 – Aug 2022</div>
+            <div class="timeline__what">
+              <h3>Developer & Teacher — Inetegem (San Rafael, CA)</h3>
+              <ul class="bullets">
+                <li>Maintained hardware/software integrations for interactive educational tools</li>
+                <li>Taught 15+ students coding, augmented reality, and programming through interactive lessons</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section class="section" id="skills">
+      <div class="container">
+        <div class="section__head">
+          <h2>Skills</h2>
+          <p>Tools and technologies I use for building, testing, and documenting engineering work.</p>
+        </div>
+
+        <div class="grid skill-grid">
+          <div class="panel">
+            <h3>Embedded / Firmware</h3>
+            <div class="chips">
+              <span class="chip">STM32</span>
+              <span class="chip">ARM</span>
+              <span class="chip">Keil uVision</span>
+              <span class="chip">C</span>
+              <span class="chip">C++</span>
+              <span class="chip">Assembly</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>EE Tools</h3>
+            <div class="chips">
+              <span class="chip">LTspice</span>
+              <span class="chip">KiCad</span>
+              <span class="chip">EAGLE</span>
+              <span class="chip">Oscilloscope</span>
+              <span class="chip">Waveform Gen</span>
+              <span class="chip">Soldering</span>
+              <span class="chip">Multimeter</span>
+              <span class="chip">Lab equipment</span>
+            
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Modeling / Analysis</h3>
+            <div class="chips">
+              <span class="chip">MATLAB</span>
+              <span class="chip">Simulink</span>
+              <span class="chip">Control Systems</span>
+              <span class="chip">DSP</span>
+              <span class="chip">Power Systems</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Web / Software</h3>
+            <div class="chips">
+              <span class="chip">HTML</span>
+              <span class="chip">CSS</span>
+              <span class="chip">JavaScript</span>
+              <span class="chip">Java</span>
+              <span class="chip">VHDL</span>
+              <span class="chip">EXEL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section class="section section--alt" id="education">
+      <div class="container">
+        <div class="section__head">
+          <h2>Education</h2>
+          <p>San Francisco State University • B.S. Electrical Engineering</p>
+        </div>
+
+        <div class="panel">
+          <h3>B.S. Electrical Engineering — SFSU</h3>
+          <p><strong>Graduated:</strong> December 2025 • <strong>Concentration:</strong> Embedded Systems & Power Systems</p>
+          <p class="muted">
+            Relevant coursework: Design with Microprocessors, Electromechanical Systems, Control Systems,
+            Communications Systems, Electromagnetics, Microelectronics, Digital Signal Processing, Power Systems,
+            Engineering Cost Analysis, Advanced design with microcontrollers, Dynamics, Digital Design, Unix/Linux.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resume -->
+    <section class="section" id="resume">
+      <div class="container">
+        <div class="section__head">
+          <h2>Resume</h2>
+          
+        </div>
+
+        <div class="panel">
+          <p class="muted">
+          
+          </p>
+          <a class="btn btn--ghost" href="Resume Joseph Hernandez.pdf" target="_blank" rel="noreferrer">Open Resume PDF</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+<section class="section section--alt" id="contact">
+  <div class="container">
+    <div class="section__head">
+      <h2>Contact</h2>
+      <p>
+        Best way to reach me is directly by email or LinkedIn.
+        I’m open to roles in embedded systems, validation, and power-focused engineering.
+      </p>
+    </div>
+
+    <div class="contact">
+      <div class="panel">
+        <h3>Let’s talk</h3>
+        <p>
+          <strong>Email:</strong>
+          <a href="mailto:joey6th14@gmail.com">joey6th14@gmail.com</a><br />
+
+          <strong>Phone:</strong>
+          <a href="tel:+15102246247">(510) 224-6247</a><br />
+
+          <strong>LinkedIn:</strong>
+          <a href="https://www.linkedin.com/in/joseph-hernandez-7150101a2"
+             target="_blank" rel="noreferrer">
+            linkedin.com/in/joseph-hernandez-7150101a2
+          </a>
+        </p>
+
+        <p class="muted">
+          Based in the San Francisco Bay Area • Open to relocation
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <p>© <span id="year"></span> Joseph Hernandez</p>
+        <a class="to-top" href="#top">Back to top ↑</a>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Simple modals (placeholders you can fill with images/links) -->
+  <dialog class="modal" id="modal">
+    <div class="modal__inner">
+      <button class="modal__close" aria-label="Close" data-close>✕</button>
+      <h3 id="modalTitle">Project</h3>
+      <div id="modalBody" class="modal__body"></div>
+      <div class="modal__actions">
+        <button class="btn btn--ghost" data-close>Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
