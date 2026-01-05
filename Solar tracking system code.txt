@@ -1,0 +1,336 @@
+#include "main.h"
+#include <stdio.h>
+/* USER CODE BEGIN Header */
+/**
+ ******************************************************************************
+ * @file           : main.c
+ * @brief         
+ *
+ *  Motor pin maps:
+ *    M1: PA5, PA6, PA7, PA8
+ *    M2: PA9, PA10, PA12, PA11
+ *    M3: PB2, PB1, PB10, PB0
+ *    M4: PC6, PC8, PC9, PC7
+ *
+ *  ADC buffer order:
+ *    adc[0] = PC2 (ADC1_IN3)
+ *    adc[1] = PC3 (ADC1_IN4)
+ *    adc[2] = PC1 (ADC1_IN2)
+ *    adc[3] = PC0 (ADC1_IN1)
+ ******************************************************************************
+ */
+/* USER CODE END Header */
+#include "main.h"
+#include <stdio.h>
+#include <string.h>
+/* -------------------- HAL Handles -------------------- */
+ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
+TIM_HandleTypeDef htim2;
+UART_HandleTypeDef huart2;
+/* -------------------- USER SETTINGS -------------------- */
+#define TH_ON   2000
+#define TH_OFF  1700
+#define BIG_STEPS      1200
+#define STEP_DELAY_US  1200
+/* -------------------- ADC DMA Buffer -------------------- */
+volatile uint16_t adc[4] = {0, 0, 0, 0};
+/* -------------------- Motor pin mapping -------------------- */
+typedef struct {
+   GPIO_TypeDef* port[4];
+   uint16_t      pin[4];
+} Motor4In_t;
+/* M1: PA5, PA6, PA7, PA8 */
+static const Motor4In_t M1 = {
+   .port = {GPIOA, GPIOA, GPIOA, GPIOA},
+   .pin  = {GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7, GPIO_PIN_8}
+};
+/* M2: PA9, PA10, PA12, PA11 */
+static const Motor4In_t M2 = {
+   .port = {GPIOA, GPIOA, GPIOA, GPIOA},
+   .pin  = {GPIO_PIN_9, GPIO_PIN_10, GPIO_PIN_12, GPIO_PIN_11}
+};
+/* M3: PB2, PB1, PB10, PB0 */
+static const Motor4In_t M3 = {
+   .port = {GPIOB, GPIOB, GPIOB, GPIOB},
+   .pin  = {GPIO_PIN_2, GPIO_PIN_1, GPIO_PIN_10, GPIO_PIN_0}
+};
+/* M4: PC6, PC8, PC9, PC7 */
+static const Motor4In_t M4 = {
+   .port = {GPIOC, GPIOC, GPIOC, GPIOC},
+   .pin  = {GPIO_PIN_6, GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_7}
+};
+static const Motor4In_t* motors[4] = { &M1, &M2, &M3, &M4 };
+/* -------------------- Prototypes -------------------- */
+void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_USART2_UART_Init(void);
+void Error_Handler(void);
+/* -------------------- Timing -------------------- */
+static void microDelay(uint16_t us)
+{
+   __HAL_TIM_SET_COUNTER(&htim2, 0);
+   while (__HAL_TIM_GET_COUNTER(&htim2) < us) { }
+}
+/* -------------------- Motor control -------------------- */
+static void motorStop(const Motor4In_t* m)
+{
+   for (int i = 0; i < 4; i++)
+       HAL_GPIO_WritePin(m->port[i], m->pin[i], GPIO_PIN_RESET);
+}
+static const uint8_t seq8[8][4] = {
+   { 1, 0, 0, 0 },
+   { 1, 1, 0, 0 },
+   { 0, 1, 0, 0 },
+   { 0, 1, 1, 0 },
+   { 0, 0, 1, 0 },
+   { 0, 0, 1, 1 },
+   { 0, 0, 0, 1 },
+   { 1, 0, 0, 1 },
+};
+static void motorApplyStep(const Motor4In_t* m, const uint8_t s[4])
+{
+   for (int i = 0; i < 4; i++)
+       HAL_GPIO_WritePin(m->port[i], m->pin[i], s[i] ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+static void motorStepCW(const Motor4In_t* m, int steps, uint16_t d_us)
+{
+   for (int s = 0; s < steps; s++)
+       for (int k = 0; k < 8; k++) { motorApplyStep(m, seq8[k]); microDelay(d_us); }
+}
+static void motorStepCCW(const Motor4In_t* m, int steps, uint16_t d_us)
+{
+   for (int s = 0; s < steps; s++)
+       for (int k = 7; k >= 0; k--) { motorApplyStep(m, seq8[k]); microDelay(d_us); }
+}
+/* -------------------- main -------------------- */
+int main(void)
+{
+   HAL_Init();
+   SystemClock_Config();
+   PeriphCommonClock_Config();
+   MX_GPIO_Init();
+   MX_ADC1_Init();
+   MX_TIM2_Init();
+   MX_USART2_UART_Init();
+   HAL_TIM_Base_Start(&htim2);
+    if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc, 4) != HAL_OK)
+       Error_Handler();
+   uint8_t atHigh[4] = {0, 0, 0, 0};
+   for (int i = 0; i < 4; i++) motorStop(motors[i]);
+   while (1)
+   {
+      
+       uint16_t adc[4] = {
+           adc[0],  /* PC2 */
+           adc[1],  /* PC3 */
+           adc[2],  /* PC1 */
+           adc[3],  /* PC0 */
+       };
+   
+       char msg[128];
+       int n = snprintf(msg, sizeof(msg),
+                        "PC2=%u PC3=%u PC1=%u PC0=%u | H=%u%u%u%u\r\n",
+                        adc[0], adc[1], adc[2], adc[3],
+                        atHigh[0], atHigh[1], atHigh[2], atHigh[3]);
+       HAL_UART_Transmit(&huart2, (uint8_t*)msg, (uint16_t)n, 50);
+       for (int i = 0; i < 4; i++)
+       {
+           if (!atHigh[i] && (adc[i] > TH_ON))
+           {
+               motorStepCW(motors[i], BIG_STEPS, STEP_DELAY_US);
+               motorStop(motors[i]);
+               atHigh[i] = 1;
+           }
+           else if (atHigh[i] && (adc[i] < TH_OFF))
+           {
+               motorStepCCW(motors[i], BIG_STEPS, STEP_DELAY_US);
+               motorStop(motors[i]);
+               atHigh[i] = 0;
+           }
+           else
+           {
+               motorStop(motors[i]);
+           }
+       }
+       HAL_Delay(10);
+   }
+}
+/* -------------------- Clock Config -------------------- */
+void SystemClock_Config(void)
+{
+   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+       Error_Handler();
+   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+   RCC_OscInitStruct.PLL.PLLM = 1;
+   RCC_OscInitStruct.PLL.PLLN = 10;
+   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
+   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+       Error_Handler();
+   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK
+                               | RCC_CLOCKTYPE_PCLK1  | RCC_CLOCKTYPE_PCLK2;
+   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+       Error_Handler();
+}
+/* ADC clock via PLLSAI1 */
+void PeriphCommonClock_Config(void)
+{
+   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+   PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
+   PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSI;
+   PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
+   PeriphClkInit.PLLSAI1.PLLSAI1N = 8;
+   PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
+   PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
+   PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
+   PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_ADC1CLK;
+   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+       Error_Handler();
+}
+/* -------------------- Peripheral Init -------------------- */
+static void MX_ADC1_Init(void)
+{
+   ADC_ChannelConfTypeDef sConfig = {0};
+   ADC_MultiModeTypeDef multimode = {0};
+   hadc1.Instance = ADC1;
+   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+   /* Scan + continuous + DMA */
+   hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+   hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+   hadc1.Init.ContinuousConvMode = ENABLE;
+   hadc1.Init.NbrOfConversion = 4;
+   hadc1.Init.DiscontinuousConvMode = DISABLE;
+   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+   hadc1.Init.DMAContinuousRequests = ENABLE;
+   hadc1.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+   hadc1.Init.OversamplingMode = DISABLE;
+   if (HAL_ADC_Init(&hadc1) != HAL_OK)
+       Error_Handler();
+   multimode.Mode = ADC_MODE_INDEPENDENT;
+   if (HAL_ADCEx_MultiModeConfigChannel(&hadc1, &multimode) != HAL_OK)
+       Error_Handler();
+   sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
+   sConfig.SingleDiff   = ADC_SINGLE_ENDED;
+   sConfig.OffsetNumber = ADC_OFFSET_NONE;
+   sConfig.Offset       = 0;
+   /* Rank 1: PC2 -> ADC1_IN3 */
+   sConfig.Channel = ADC_CHANNEL_3;
+   sConfig.Rank    = ADC_REGULAR_RANK_1;
+   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) Error_Handler();
+   /* Rank 2: PC3 -> ADC1_IN4 */
+   sConfig.Channel = ADC_CHANNEL_4;
+   sConfig.Rank    = ADC_REGULAR_RANK_2;
+   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) Error_Handler();
+   /* Rank 3: PC1 -> ADC1_IN2 */
+   sConfig.Channel = ADC_CHANNEL_2;
+   sConfig.Rank    = ADC_REGULAR_RANK_3;
+   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) Error_Handler();
+   /* Rank 4: PC0 -> ADC1_IN1 */
+   sConfig.Channel = ADC_CHANNEL_1;
+   sConfig.Rank    = ADC_REGULAR_RANK_4;
+   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) Error_Handler();
+}
+static void MX_TIM2_Init(void)
+{
+   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+   TIM_MasterConfigTypeDef sMasterConfig = {0};
+   htim2.Instance = TIM2;
+   htim2.Init.Prescaler = 80 - 1;   
+   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+   htim2.Init.Period = 0xFFFFFFFF;
+   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+       Error_Handler();
+   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+   if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+       Error_Handler();
+   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+       Error_Handler();
+}
+static void MX_USART2_UART_Init(void)
+{
+   huart2.Instance = USART2;
+   huart2.Init.BaudRate = 115200;
+   huart2.Init.WordLength = UART_WORDLENGTH_8B;
+   huart2.Init.StopBits = UART_STOPBITS_1;
+   huart2.Init.Parity = UART_PARITY_NONE;
+   huart2.Init.Mode = UART_MODE_TX_RX;
+   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+   huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+   huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+   if (HAL_UART_Init(&huart2) != HAL_OK)
+       Error_Handler();
+}
+static void MX_GPIO_Init(void)
+{
+   GPIO_InitTypeDef GPIO_InitStruct = {0};
+   __HAL_RCC_GPIOA_CLK_ENABLE();
+   __HAL_RCC_GPIOB_CLK_ENABLE();
+   __HAL_RCC_GPIOC_CLK_ENABLE();
+   /* Motor outputs */
+   GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+   GPIO_InitStruct.Pull  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+   /* M1: PA5-PA8 */
+   GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8;
+   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+   /* M2: PA9, PA10, PA11, PA12 */
+   GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+   /* M3: PB0, PB1, PB2, PB10 */
+   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10;
+   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+   /* M4: PC6, PC7, PC8, PC9 */
+   GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
+   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+   /* ADC pins as analog (PC0-3) */
+   GPIO_InitStruct.Pin  = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
+   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
+   GPIO_InitStruct.Pull = GPIO_NOPULL;
+   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+   /* Default all motor outputs low */
+   HAL_GPIO_WritePin(GPIOA,
+       GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|
+       GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12,
+       GPIO_PIN_RESET);
+   HAL_GPIO_WritePin(GPIOB,
+       GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10,
+       GPIO_PIN_RESET);
+   HAL_GPIO_WritePin(GPIOC,
+       GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9,
+       GPIO_PIN_RESET);
+}
+/* -------------------- Error Handler -------------------- */
+void Error_Handler(void)
+{
+   __disable_irq();
+   while (1) { }
+}
+
+
+#endif
+
+
