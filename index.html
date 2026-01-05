@@ -148,37 +148,45 @@
             </div>
             
           </article>
-            <!-- Project: Solar Tracking Curtain System -->
-<article class="card">
-  <div class="card__top">
-    <h3>Solar Tracking Curtain System</h3>
-    <p class="card__tag">STM32 • ADC + DMA • Timers • Interrupts • Embedded Control</p>
-  </div>
-
-  <p>
-    Embedded solar-tracking, light-responsive curtain system designed to reduce building
-    cooling load by actively controlling sunlight exposure. The system uses a single ADC
-    with DMA-driven multi-channel scanning to continuously sample four photoresistors and
-    independently control four stepper motors using hysteresis-based logic.
-  </p>
-
-  <ul class="bullets">
-    <li>ADC1 scan mode with DMA (circular buffer) for continuous, low-overhead sensing</li>
-    <li>Deterministic motor control using TIM2 microsecond-resolution timing</li>
-    <li>Independent quadrant control with hysteresis to prevent oscillation</li>
-    <li>External interrupt (EXTI) for low-latency manual override</li>
-    <li>Designed with future low-power sleep/RTC wake-up support in mind</li>
-  </ul>
-
-  <div class="card__actions">
-    <a class="btn btn--small"
-       href="Solar tracking system report.pdf"
-       target="_blank"
-       rel="noreferrer">
-      View Technical Report (PDF)
-    </a>
-  </div>
-</article>
+                        <!-- Project: Solar Tracking Curtain System -->
+            <article class="card">
+              <div class="card__top">
+                <h3>Solar Tracking Curtain System</h3>
+                <p class="card__tag">STM32 • ADC + DMA • Timers • Interrupts • Embedded Control</p>
+              </div>
+            
+              <p>
+                Embedded solar-tracking, light-responsive curtain system designed to reduce building
+                cooling load by actively controlling sunlight exposure. The system uses a single ADC
+                with DMA-driven multi-channel scanning to continuously sample four photoresistors and
+                independently control four stepper motors using hysteresis-based logic.
+              </p>
+            
+              <ul class="bullets">
+                <li>ADC1 scan mode with DMA (circular buffer) for continuous, low-overhead sensing</li>
+                <li>Deterministic motor control using TIM2 microsecond-resolution timing</li>
+                <li>Independent quadrant control with hysteresis to prevent oscillation</li>
+                <li>External interrupt (EXTI) for low-latency manual override</li>
+                <li>Designed with future low-power sleep/RTC wake-up support in mind</li>
+              </ul>
+            
+              <div class="card__actions">
+                <a class="btn btn--small"
+                   href="Solar tracking system report.pdf"
+                   target="_blank"
+                   rel="noreferrer">
+                  View Technical Report (PDF)
+                </a>
+              </div>
+                <div class="card__actions">
+                            <a class="btn btn--small"
+                              href="Solar tracking system code.txt"
+                                target="_blank"
+                                rel="noreferrer">
+                                Code
+                              </a>
+                              </div>
+                      </article>
 
           <!-- Project 2 -->
           <article class="card">
@@ -457,5 +465,6 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
